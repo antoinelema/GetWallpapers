@@ -2,3 +2,5 @@
 getReddit/ignorpasswd\.py
 
 \.env
+
+\.token

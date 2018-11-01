@@ -17,11 +17,36 @@ def getToken():
         'User-Agent': 'My User Agent GetRedditWallpaper',
         'From': 'neiho'
         }
-
-    response = requests.post("https://www.reddit.com/api/v1/access_token", auth=client_auth, data=post_data, headers=headers)
+    try:
+        response = requests.post("https://www.reddit.com/api/v1/access_token", auth=client_auth, data=post_data, headers=headers)
+        response.raise_for_status()
+    except Exception as e:
+         sys.exit('the token could not be fetched, exiting ...')
     json_data = response.json()
     token = json_data['access_token']
     return token
+
+
+def getUrlImg(token, count=0):
+    url = "https://www.reddit.com/r/wallpapers/hot.json?limit=1"
+    try:
+        response = get_all(url, token)
+        response.raise_for_status()
+    except requests.exceptions.HTTPError as http_error:
+        print(http_error.response.status_code)
+        if (http_error.response.status_code == 404):
+            sys.exit("there seems to be a problem, oops")
+        else:
+            if (count == 0):
+                with open("../.token",'w') as file:
+                    token = getToken()
+                    file.write(token)
+                    getUrlImg(token, count+1)
+            else:
+                sys.exit("there seems to be a problem, oops")
+    data = response.json()
+    url_img = data['data']["children"][0]['data']['url']
+    return url_img
 
 
 def get_all(url,token):
